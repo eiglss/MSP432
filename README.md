@@ -37,3 +37,11 @@ or `c`
 
 ---
 *Note that file versioned `0` haven't been fully tested.*
+
+---
+Comming soon (in this order)
+* timer (timer A and timer 32)
+* RTC
+* AES256 accelerator
+* CRC322
+* ADC
