@@ -15,6 +15,11 @@ ifndef TARGET
     TARGET 			:= main.out
 endif
 
+ifndef PORT
+    #$(info Port unspecified, default: PORT=55000)
+    PORT 			:= 55000
+endif
+
 SOURCES				:= $(patsubst libraries/src/%.c, %.c, $(wildcard libraries/src/*.c))
 SOURCES 			+= $(patsubst src/%.c, %.c, $(wildcard src/*.c))
 
@@ -95,10 +100,14 @@ $(OBJ_DIR)/$(TARGET): $(OBJECTS)
 	@date
 
 debug: all
-	$(GDB) $(OBJ_DIR)/$(TARGET)
+	$(GDB) $(OBJ_DIR)/$(TARGET) -ex 'target remote :$(PORT)' -ex 'load' -ex 'monitor reset'
+	# run first:
+	# `~/ti/gcc/emulation/common/uscif/gdb_agent_console -f MSP432 xds110_msp432_swd.dat`
+	# then:
+	# `make debug DEVICE=MSP432P401R TARGET=main.out`
+	# to run the loaded code execute following gdb command:
+	# `continue`
+	# or `c`
 
 clean:
 	@$(RM) $(OBJ_DIR)
-
-test:
-	@echo $(VPATH)
