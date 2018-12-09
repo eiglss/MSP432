@@ -9,7 +9,7 @@
 
 /******************************************************************************/
 /**
-*   MSP432P401 Demo - Software Toggle P1.0
+*   MSP432P401R Demo
 *
 *   Description: change RGB light status when push button 1 is pressed.
 *
