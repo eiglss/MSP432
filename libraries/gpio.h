@@ -2,9 +2,9 @@
 /**
 *      @file : gpio.h
 *   @version : 0
-*      @date : June 4, 2017
+*      @date : December 8, 2018
 *    @author : Enzo IGLESIS
-* @copyright : Copyright (c) 2017 Enzo IGLESIS, MIT License (MIT)
+* @copyright : Copyright (c) 2018 Enzo IGLESIS, MIT License (MIT)
 *******************************************************************************/
 
 #ifndef GPIO_H_

@@ -2,7 +2,7 @@
 /**
 *      @file : gpio.c
 *   @version : 0
-*      @date : December 2, 2017
+*      @date : December 8, 2018
 *    @author : Enzo IGLESIS
 * @copyright : Copyright (c) 2018 Enzo IGLESIS, MIT License (MIT)
 *******************************************************************************/
