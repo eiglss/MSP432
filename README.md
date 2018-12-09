@@ -42,6 +42,7 @@ or `c`
 Comming soon (in this order)
 * timer (timer A and timer 32)
 * RTC
+* eUSCI
 * AES256 accelerator
 * CRC322
 * ADC
