@@ -22,7 +22,7 @@ static void (* interrupt_handler_PORT4)(void) = default_handler;
 static void (* interrupt_handler_PORT5)(void) = default_handler;
 static void (* interrupt_handler_PORT6)(void) = default_handler;
 
-/**** configuration ****/
+    /**** initialization ****/
 /******************************************************************************/
 /**
 * @biref    Initializing function pointer of the structure gpio_t.
@@ -121,6 +121,7 @@ void gpio_initialize_even(gpio_t * this, DIO_PORT_Even_Interruptable_Type * port
     this->pin_even = pin;
 }
 
+    /**** configuration ****/
 /******************************************************************************/
 /**
 * @biref    Setup gpio instance as input.
