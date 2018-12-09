@@ -40,7 +40,6 @@ or `c`
 
 ---
 Comming soon (in this order)
-* timer A
 * RTC
 * eUSCI
 * AES256 accelerator
