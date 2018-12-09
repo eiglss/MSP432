@@ -92,11 +92,8 @@ typedef struct gpio_t
     uint8_t (*read_odd) (struct gpio_t * this);
     uint8_t (*read_even) (struct gpio_t * this);
     /**** Interrupt ****/
-    int (*enable_interrupt_rising_edge_odd) (struct gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
-    int (*enable_interrupt_falling_edge_odd) (struct gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
-    int (*enable_interrupt_rising_edge_even) (struct gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
-    int (*enable_interrupt_falling_edge_even) (struct gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
-
+    int (*enable_interrupt_rising_edge) (struct gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
+    int (*enable_interrupt_falling_edge) (struct gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
 }gpio_t;
 
 /*******************************   FUNCTIONS    *******************************/
@@ -123,9 +120,7 @@ uint8_t gpio_read_odd(gpio_t * gpio);
 uint8_t gpio_read_even(gpio_t * gpio);
 
 /**** Interrupt ****/
-int gpio_enable_interrupt_rising_edge_odd(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
-int gpio_enable_interrupt_falling_edge_odd(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
-int gpio_enable_interrupt_rising_edge_even(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
-int gpio_enable_interrupt_falling_edge_even(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
+int gpio_enable_interrupt_rising_edge(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
+int gpio_enable_interrupt_falling_edge(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority);
 
 #endif /* GPIO_H_ */

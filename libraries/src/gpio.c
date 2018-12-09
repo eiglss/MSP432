@@ -14,7 +14,7 @@
 /**** interrupt function ****/ /* see INTERRUPT section */
 static void default_handler(void){while(!0);}
 
-/**** GPIO ****/
+    /**** GPIO ****/
 static void (* interrupt_handler_PORT1)(void) = default_handler;
 static void (* interrupt_handler_PORT2)(void) = default_handler;
 static void (* interrupt_handler_PORT3)(void) = default_handler;
@@ -22,7 +22,7 @@ static void (* interrupt_handler_PORT4)(void) = default_handler;
 static void (* interrupt_handler_PORT5)(void) = default_handler;
 static void (* interrupt_handler_PORT6)(void) = default_handler;
 
-    /**** initialization ****/
+/**** initialization ****/
 /******************************************************************************/
 /**
 * @biref    Initializing function pointer of the structure gpio_t.
@@ -50,10 +50,8 @@ static void gpio_initialize_struct(gpio_t * this)
     this->read = gpio_read;
     this->read_odd = gpio_read_odd;
     this->read_even = gpio_read_even;
-    this->enable_interrupt_rising_edge_odd = gpio_enable_interrupt_rising_edge_odd;
-    this->enable_interrupt_falling_edge_odd = gpio_enable_interrupt_falling_edge_odd;
-    this->enable_interrupt_rising_edge_even = gpio_enable_interrupt_rising_edge_even;
-    this->enable_interrupt_falling_edge_even = gpio_enable_interrupt_falling_edge_even;
+    this->enable_interrupt_rising_edge = gpio_enable_interrupt_rising_edge;
+    this->enable_interrupt_falling_edge = gpio_enable_interrupt_falling_edge;
 }
 
 /******************************************************************************/
@@ -366,7 +364,7 @@ uint8_t gpio_read_even(gpio_t * this)
 /**** interrupt ****/
 /******************************************************************************/
 /**
-* @biref    Enable interrupt function on odd port.
+* @biref    Enable interrupt function.
 *
 * @param    this is a pointer to the instance gpio_t.
 * @param    interrupt_handler is a pointer to the interrupt function that will
@@ -376,14 +374,20 @@ uint8_t gpio_read_even(gpio_t * this)
 * @return   -1 when the port is not supported for the interrupt else 0.
 *
 *******************************************************************************/
-static int gpio_enable_interrupt_odd(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority)
+static int gpio_enable_interrupt(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority)
 {
-    this->port_odd->IE &= ~(this->pin_odd); /* Interrupt disabled */
+    this->port->IE &= ~(this->pin); /* Interrupt disabled */
     if(this->port_odd == P1)
     {
         __NVIC_EnableIRQ(PORT1_IRQn); /* Enable IRQ of the P1 */
         __NVIC_SetPriority(PORT1_IRQn, priority); /* set the priority of the IRQ */
         interrupt_handler_PORT1 = interrupt_handler; /* set the interrupt function */
+    }
+    else if(this->port_even == P2)
+    {
+        __NVIC_EnableIRQ(PORT2_IRQn); /* Enable IRQ of the P1 */
+        __NVIC_SetPriority(PORT2_IRQn, priority); /* set the priority of the IRQ */
+        interrupt_handler_PORT2 = interrupt_handler; /* set the interrupt function */
     }
     else if(this->port_odd == P3)
     {
@@ -391,94 +395,17 @@ static int gpio_enable_interrupt_odd(gpio_t * this, void (*interrupt_handler)(vo
         __NVIC_SetPriority(PORT3_IRQn, priority); /* set the priority of the IRQ */
         interrupt_handler_PORT3 = interrupt_handler; /* set the interrupt function */
     }
-    else if(this->port_odd == P5)
-    {
-        __NVIC_EnableIRQ(PORT5_IRQn); /* Enable IRQ of the P1 */
-        __NVIC_SetPriority(PORT5_IRQn, priority); /* set the priority of the IRQ */
-        interrupt_handler_PORT5 = interrupt_handler; /* set the interrupt function */
-    }
-    else
-    {
-        return -1;
-    }
-    this->port_odd->IE |= this->pin_odd; /* Interrupt enable */
-    return 0;
-}
-
-/******************************************************************************/
-/**
-* @biref    Enable interrupt function for rising edge on odd port.
-*
-* @param    this is a pointer to the instance gpio_t.
-* @param    interrupt_handler is a pointer to the interrupt function that will
-*           be execute when the interrupt flag is raised.
-* @param    priority is the priority of the interrupt.
-*
-* @return   -1 when the port is not supported for the interrupt else 0.
-*
-* @note     interrupt_handler will be faster and not take more place if you make
-*           an inline function.
-*           Don't forget to enable global interrupts with
-*           `__enable_interrupts();` this function must be executed after
-*           configuring all interrupt function.
-*
-*******************************************************************************/
-int gpio_enable_interrupt_rising_edge_odd(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority)
-{
-    this->port_odd->IES &= ~(this->pin_odd);
-    return gpio_enable_interrupt_odd(this, interrupt_handler, priority);
-}
-
-/******************************************************************************/
-/**
-* @biref    Enable interrupt function for falling edge on odd port.
-*
-* @param    this is a pointer to the instance gpio_t.
-* @param    interrupt_handler is a pointer to the interrupt function that will
-*           be execute when the interrupt flag is raised.
-* @param    priority is the priority of the interrupt.
-*
-* @return   -1 when the port is not supported for the interrupt else 0.
-*
-* @note     interrupt_handler will be faster and not take more place if you make
-*           an inline function.
-*           Don't forget to enable global interrupts with
-*           `__enable_interrupts();` this function must be executed after
-*           configuring all interrupt function.
-*
-*******************************************************************************/
-int gpio_enable_interrupt_falling_edge_odd(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority)
-{
-    this->port_odd->IES |= this->pin_odd;
-    return gpio_enable_interrupt_odd(this, interrupt_handler, priority);
-}
-
-/******************************************************************************/
-/**
-* @biref    Enable interrupt function on even port.
-*
-* @param    this is a pointer to the instance gpio_t.
-* @param    interrupt_handler is a pointer to the interrupt function that will
-*           be execute when the interrupt flag is raised.
-* @param    priority is the priority of the interrupt.
-*
-* @return   -1 when the port is not supported for the interrupt else 0.
-*
-*******************************************************************************/
-static int gpio_enable_interrupt_even(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority)
-{
-    this->port_even->IE &= ~(this->pin_even); /* Interrupt disabled */
-    if(this->port_even == P2)
-    {
-        __NVIC_EnableIRQ(PORT2_IRQn); /* Enable IRQ of the P1 */
-        __NVIC_SetPriority(PORT2_IRQn, priority); /* set the priority of the IRQ */
-        interrupt_handler_PORT2 = interrupt_handler; /* set the interrupt function */
-    }
     else if(this->port_even == P4)
     {
         __NVIC_EnableIRQ(PORT4_IRQn); /* Enable IRQ of the P1 */
         __NVIC_SetPriority(PORT4_IRQn, priority); /* set the priority of the IRQ */
         interrupt_handler_PORT4 = interrupt_handler; /* set the interrupt function */
+    }
+    else if(this->port_odd == P5)
+    {
+        __NVIC_EnableIRQ(PORT5_IRQn); /* Enable IRQ of the P1 */
+        __NVIC_SetPriority(PORT5_IRQn, priority); /* set the priority of the IRQ */
+        interrupt_handler_PORT5 = interrupt_handler; /* set the interrupt function */
     }
     else if(this->port_even == P6)
     {
@@ -490,13 +417,13 @@ static int gpio_enable_interrupt_even(gpio_t * this, void (*interrupt_handler)(v
     {
         return -1;
     }
-    this->port_even->IE |= this->pin_even; /* Interrupt enable */
+    this->port->IE |= this->pin; /* Interrupt enable */
     return 0;
 }
 
 /******************************************************************************/
 /**
-* @biref    Enable interrupt function for rising edge on even port.
+* @biref    Enable interrupt function for rising edge.
 *
 * @param    this is a pointer to the instance gpio_t.
 * @param    interrupt_handler is a pointer to the interrupt function that will
@@ -512,15 +439,15 @@ static int gpio_enable_interrupt_even(gpio_t * this, void (*interrupt_handler)(v
 *           configuring all interrupt function.
 *
 *******************************************************************************/
-int gpio_enable_interrupt_rising_edge_even(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority)
+int gpio_enable_interrupt_rising_edge(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority)
 {
-    this->port_even->IES &= ~(this->pin_even);
-    return gpio_enable_interrupt_even(this, interrupt_handler, priority);
+    this->port->IES &= ~(this->pin);
+    return gpio_enable_interrupt(this, interrupt_handler, priority);
 }
 
 /******************************************************************************/
 /**
-* @biref    Enable interrupt function for falling edge on even port.
+* @biref    Enable interrupt function for falling edge.
 *
 * @param    this is a pointer to the instance gpio_t.
 * @param    interrupt_handler is a pointer to the interrupt function that will
@@ -536,10 +463,10 @@ int gpio_enable_interrupt_rising_edge_even(gpio_t * this, void (*interrupt_handl
 *           configuring all interrupt function.
 *
 *******************************************************************************/
-int gpio_enable_interrupt_falling_edge_even(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority)
+int gpio_enable_interrupt_falling_edge(gpio_t * this, void (*interrupt_handler)(void), uint32_t priority)
 {
-    this->port_even->IES |= this->pin_even;
-    return gpio_enable_interrupt_even(this, interrupt_handler, priority);
+    this->port->IES |= this->pin;
+    return gpio_enable_interrupt(this, interrupt_handler, priority);
 }
 
 /*******************************   INTERRUPT    *******************************/
