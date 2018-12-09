@@ -7,7 +7,7 @@
 * @copyright : Copyright (c) 2018 Enzo IGLESIS, MIT License (MIT)
 *******************************************************************************/
 
-/*******************************     BRIEF      ********************************/
+/*******************************     BRIEF      *******************************/
 /**
 *
 * 1. Introduction
@@ -103,4 +103,4 @@ int timer32_period_us(timer32_t * this, uint64_t period_us);
 int timer32_disable_interrupt(timer32_t * this);
 int timer32_enable_interrupt(timer32_t * this, void (*interrupt_handler)(void), uint32_t priority);
 
-#endif /* TIMER_H_ */
+#endif /* TIMER32_H_ */
