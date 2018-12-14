@@ -63,7 +63,7 @@ int main(void)
     gpio_initialize_odd(&led_red, P1, PIN0); /* associate led_red to P1.0 */
     led_red.output(&led_red); /* configure led_red pin as output */
     led_red.clear(&led_red);
-        /* TIMER 32 */
+        /* TIMER A */
     timer_A_initialize(&timer_1s, TIMER_A0);  /* associate timer_1s to TIMER_A0 */
     timer_1s.up_mode(&timer_1s, s_to_us(1)); /* configure timer_1s in up mode,
     with a period of 20 millisecond */
