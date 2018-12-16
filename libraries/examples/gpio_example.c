@@ -119,7 +119,7 @@ int main(void)
     rgb_b.output(&rgb_b); /* configure rgb_b pin as output */
     rgb(1,0,0); /* turn RGB light to red */
     push1.input_pullup(&push1); /* config push1 as input with pullup resistor */
-    push1.enable_interrupt_falling_edge_odd(&push1, interrupt_push_button, 35);/*
+    push1.enable_interrupt_falling_edge(&push1, interrupt_push_button, 35);/*
     enable interrupt on push1 button for falling edge and associate to
     interrupt_push_button function with a priority of 35 */
     __enable_interrupts(); /* enable interrupts globally */
