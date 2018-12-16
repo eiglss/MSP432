@@ -29,6 +29,32 @@
 *   - `Up/down`: The timer repeatedly counts from zero up to the value loaded
 *                and back down to zero.
 *
+* 3. PIN output mode
+* TIMER A0:
+*   - Channel 0: 7.3
+*   - Channel 1: 2.4
+*   - Channel 2: 2.5
+*   - Channel 3: 2.6
+*   - Channel 4: 2.7
+* TIMER A1:
+*   - Channel 0: 8.0
+*   - Channel 1: 7.7
+*   - Channel 2: 7.6
+*   - Channel 3: 7.5
+*   - Channel 4: 7.4
+* TIMER A2:
+*   - Channel 0: 8.1
+*   - Channel 1: 5.6
+*   - Channel 2: 5.7
+*   - Channel 3: 6.6
+*   - Channel 4: 6.7
+* TIMER A3:
+*   - Channel 0: 10.4
+*   - Channel 1: 10.5
+*   - Channel 2: 8.2
+*   - Channel 3: 9.2
+*   - Channel 4: 9.3
+*
 *******************************************************************************/
 
 #ifndef TIMER_A_H_
@@ -46,6 +72,7 @@ TIMER_A1: timer A (1) (Timer_A_Type *)
 TIMER_A2: timer A (2) (Timer_A_Type *)
 TIMER_A3: timer A (3) (Timer_A_Type *)
 **/
+
     /**** divider ****/
 #define TIMER_A_DIVIDER_1   TIMER_A_CTL_ID__1
 #define TIMER_A_DIVIDER_2   TIMER_A_CTL_ID__2
@@ -103,6 +130,7 @@ typedef struct timer_A_t
         /**** attributes ****/
     uint32_t period_us;
     uint32_t mode_control;
+    uint8_t pwm_channel;
     /**** functions ****/
         /**** Main modes ****/
     int (* up_mode) (struct timer_A_t * this, uint32_t period_us);
@@ -114,7 +142,7 @@ typedef struct timer_A_t
         /**** Output ****/
     int (* set_output_mode) (struct timer_A_t * this, uint8_t channel, uint8_t output_mode);
     int (* set_channel_event_us) (struct timer_A_t * this, uint8_t channel, uint32_t event_us);
-    int (* set_channel_event_percent) (struct timer_A_t * this, uint8_t channel, float percent_of_period);
+    int (* set_channel_event_pc) (struct timer_A_t * this, uint8_t channel, float pc_of_period);
     int (* out_bit_set) (struct timer_A_t * this, uint8_t channel);
     int (* out_bit_clear) (struct timer_A_t * this, uint8_t channel);
     int (* out_bit_toggle) (struct timer_A_t * this, uint8_t channel);
@@ -123,13 +151,17 @@ typedef struct timer_A_t
     void (* start) (struct timer_A_t * this);
     uint16_t (* raw_value) (struct timer_A_t * this);
     uint32_t (* value_us) (struct timer_A_t * this);
-    float (* value_percent) (struct timer_A_t * this);
+    float (* value_pc) (struct timer_A_t * this);
     int (* set_period_us) (struct timer_A_t * this, uint32_t period_us);
         /****  Interrupt ****/
     int (* enable_interrupt) (struct timer_A_t * this, void (*interrupt_handler)(void), uint32_t priority);
     int (* enable_capture_compare_interrupt) (struct timer_A_t * this, uint8_t channel, void (*interrupt_handler)(void), uint32_t priority);
     int (* disable_interrupt) (struct timer_A_t * this);
     int (* disable_capture_compare_interrupt) (struct timer_A_t * this, uint8_t channel);
+        /**** PWM ****/
+    void (* pwm_duty_cycle) (struct timer_A_t * this, float duty_cycle);
+    void (* pwm_time_on) (struct timer_A_t * this, uint32_t time_on_us);
+    int (* pwm) (struct timer_A_t * this, uint8_t channel, uint32_t period_us, uint32_t time_on_us);
 }timer_A_t;
 
 /*******************************   FUNCTIONS    *******************************/
@@ -146,7 +178,7 @@ int timer_A_compare_mode(timer_A_t * this, uint8_t channel);
     /**** Output ****/
 int timer_A_set_output_mode(timer_A_t * this, uint8_t channel, uint8_t output_mode);
 int timer_A_set_channel_event_us(timer_A_t * this, uint8_t channel, uint32_t event_us);
-int timer_A_set_channel_event_percent(timer_A_t * this, uint8_t channel, float percent_of_period);
+int timer_A_set_channel_event_pc(timer_A_t * this, uint8_t channel, float pc_of_period);
 int timer_A_out_bit_set(timer_A_t * this, uint8_t channel);
 int timer_A_out_bit_clear(timer_A_t * this, uint8_t channel);
 int timer_A_out_bit_toggle(timer_A_t * this, uint8_t channel);
@@ -155,12 +187,16 @@ void timer_A_pause(timer_A_t * this);
 void timer_A_start(timer_A_t * this);
 uint16_t timer_A_raw_value(timer_A_t * this);
 uint32_t timer_A_value_us(timer_A_t * this);
-float timer_A_value_percent(timer_A_t * this);
+float timer_A_value_pc(timer_A_t * this);
 int timer_A_set_period_us(timer_A_t * this, uint32_t period_us);
     /**** Interrupt ****/
 int timer_A_enable_interrupt(timer_A_t * this, void (*interrupt_handler)(void), uint32_t priority);
 int timer_A_enable_capture_compare_interrupt(timer_A_t * this, uint8_t channel, void (*interrupt_handler)(void), uint32_t priority);
 int timer_A_disable_interrupt(timer_A_t * this);
 int timer_A_disable_capture_compare_interrupt(timer_A_t * this, uint8_t channel);
+/**** PWM ****/
+void timer_A_pwm_duty_cycle(timer_A_t * this, float duty_cycle);
+void timer_A_pwm_time_on(timer_A_t * this, uint32_t time_on_us);
+int timer_A_pwm(timer_A_t * this, uint8_t channel, uint32_t period_us, uint32_t time_on_us);
 
 #endif /* TIMER_A_H_ */

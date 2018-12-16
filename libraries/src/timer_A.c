@@ -14,9 +14,7 @@
 /*******************************   VARIABLES    *******************************/
 
 /*******************************     MACROS     *******************************/
-#ifndef map
-#   define map(x, in_min, in_max, out_min, out_max) (((x) - (in_min)) * ((out_max) - (out_min)) / ((in_max) - (in_min)) + (out_min))
-#endif
+#define map(x, in_min, in_max, out_min, out_max) (((x) - (in_min)) * ((out_max) - (out_min)) / ((in_max) - (in_min)) + (out_min))
 
 /*******************************   CONSTANTS    *******************************/
 /**** gpio ****/
@@ -102,7 +100,7 @@ static void timer_A_initialize_struct(timer_A_t * this)
     this->compare_mode = timer_A_compare_mode;
     this->set_output_mode = timer_A_set_output_mode;
     this->set_channel_event_us = timer_A_set_channel_event_us;
-    this->set_channel_event_percent = timer_A_set_channel_event_percent;
+    this->set_channel_event_pc = timer_A_set_channel_event_pc;
     this->out_bit_set = timer_A_out_bit_set;
     this->out_bit_clear = timer_A_out_bit_clear;
     this->out_bit_toggle = timer_A_out_bit_toggle;
@@ -111,12 +109,15 @@ static void timer_A_initialize_struct(timer_A_t * this)
     this->start = timer_A_start;
     this->raw_value = timer_A_raw_value;
     this->value_us = timer_A_value_us;
-    this->value_percent = timer_A_value_percent;
+    this->value_pc = timer_A_value_pc;
     this->set_period_us = timer_A_set_period_us;
     this->enable_interrupt = timer_A_enable_interrupt;
     this->enable_capture_compare_interrupt = timer_A_enable_capture_compare_interrupt;
     this->disable_interrupt = timer_A_disable_interrupt;
     this->disable_capture_compare_interrupt = timer_A_disable_capture_compare_interrupt;
+    this->pwm_duty_cycle = timer_A_pwm_duty_cycle;
+    this->pwm_time_on = timer_A_pwm_time_on;
+    this->pwm = timer_A_pwm;
 }
 
 /******************************************************************************/
@@ -374,23 +375,23 @@ static int timer_A_gpio(timer_A_t * this, uint8_t channel, gpio_t * gpio)
     /* program statement */
     if(this->timer_A == TIMER_A0)
     {
-        port = (DIO_PORT_Interruptable_Type *)timer_A0_gpio[0][channel];
-        pin = timer_A0_gpio[1][channel];
+        port = (DIO_PORT_Interruptable_Type *)timer_A0_gpio[channel][0];
+        pin = timer_A0_gpio[channel][1];
     }
     else if(this->timer_A == TIMER_A1)
     {
-        port = (DIO_PORT_Interruptable_Type *)timer_A1_gpio[0][channel];
-        pin = timer_A1_gpio[1][channel];
+        port = (DIO_PORT_Interruptable_Type *)timer_A1_gpio[channel][0];
+        pin = timer_A1_gpio[channel][1];
     }
     else if(this->timer_A == TIMER_A2)
     {
-        port = (DIO_PORT_Interruptable_Type *)timer_A2_gpio[0][channel];
-        pin = timer_A2_gpio[1][channel];
+        port = (DIO_PORT_Interruptable_Type *)timer_A2_gpio[channel][0];
+        pin = timer_A2_gpio[channel][1];
     }
     else if(this->timer_A == TIMER_A3)
     {
-        port = (DIO_PORT_Interruptable_Type *)timer_A3_gpio[0][channel];
-        pin = timer_A3_gpio[1][channel];
+        port = (DIO_PORT_Interruptable_Type *)timer_A3_gpio[channel][0];
+        pin = timer_A3_gpio[channel][1];
     }
     else
     {
@@ -638,7 +639,7 @@ int timer_A_set_channel_event_us(timer_A_t * this, uint8_t channel, uint32_t eve
         }
         else
         {
-            this->timer_A->CCR[channel] = (uint16_t)map((uint64_t)event_us, (uint64_t)0, max_in, (uint64_t)0, (uint64_t)this->timer_A->CCR[0]);
+            this->timer_A->CCR[channel] = (uint16_t)map((uint64_t)event_us, (uint64_t)0, max_in, (uint64_t)0, (uint64_t)(this->timer_A->CCR[0]));
         }
     }
     return 0;
@@ -654,7 +655,7 @@ int timer_A_set_channel_event_us(timer_A_t * this, uint8_t channel, uint32_t eve
 *           value are 1 to 4. Note that the channel 0 is only available for the
 *           continuous mode. The channel 0 for others modes define the period
 *           and can be change with timer_A_set_period_us.
-* @param    percent_of_period is at how many percent the event must be
+* @param    pc_of_period is at how many pc the event must be
 *           configured. If the value is bigger than 100% it will be reset at
 *           100%. (except for up/down mode, see note section below).
 *
@@ -664,9 +665,9 @@ int timer_A_set_channel_event_us(timer_A_t * this, uint8_t channel, uint32_t eve
 *           the period.
 *
 *******************************************************************************/
-int timer_A_set_channel_event_percent(timer_A_t * this, uint8_t channel, float percent_of_period)
+int timer_A_set_channel_event_pc(timer_A_t * this, uint8_t channel, float pc_of_period)
 {
-    return timer_A_set_channel_event_us(this, channel, (uint32_t)((percent_of_period/100.)*this->period_us));
+    return timer_A_set_channel_event_us(this, channel, (uint32_t)((pc_of_period/100.)*this->period_us));
 }
 
 /******************************************************************************/
@@ -860,7 +861,7 @@ uint32_t timer_A_value_us(timer_A_t * this)
 * @note     Not available for up/down mode.
 *
 *******************************************************************************/
-float timer_A_value_percent(timer_A_t * this)
+float timer_A_value_pc(timer_A_t * this)
 {
     if(this->mode_control == TIMER_A_CTL_MC__CONTINUOUS)
     {
@@ -1123,6 +1124,78 @@ int timer_A_disable_capture_compare_interrupt(timer_A_t * this, uint8_t channel)
     return 0;
 }
 
+/**** PWM ****/
+
+/******************************************************************************/
+/**
+* @brief    Configure the timer A PWM, on the specified channel, with a new
+*           time on in percent.
+*
+* @param    this is a pointer to the instance timer_A_t that you want to use.
+* @param    duty_cycle is the percent of time that the PWM will be HIGH.
+*
+* @return   None.
+*
+* @note     None.
+*
+*******************************************************************************/
+void timer_A_pwm_duty_cycle(timer_A_t * this, float duty_cycle)
+{
+    this->timer_A->CCR[this->pwm_channel] = (uint16_t)map(duty_cycle, 0., 100., 0., (float)this->timer_A->CCR[0]);
+}
+
+/******************************************************************************/
+/**
+* @brief    Configure the timer A PWM, on the specified channel, with a new
+*           time on in microsecond.
+*
+* @param    this is a pointer to the instance timer_A_t that you want to use.
+* @param    time_on_us is the time that the PWM will be HIGH.
+*
+* @return   None.
+*
+* @note     None.
+*
+*******************************************************************************/
+void timer_A_pwm_time_on(timer_A_t * this, uint32_t time_on_us)
+{
+    this->timer_A->CCR[this->pwm_channel] = (uint16_t)map((uint64_t)time_on_us, (uint64_t)0, this->period_us, (uint64_t)0, (uint64_t)(this->timer_A->CCR[0]));
+}
+
+/******************************************************************************/
+/**
+* @brief    Configure the timer A as a PWM, on the specified channel, with the
+*           specified period and the specified time on.
+*
+* @param    this is a pointer to the instance timer_A_t that you want to use.
+* @param    channel is the channel number where the compare mode will be
+*           enabled. Possible value are 1 to 4.
+* @param    period_us is the period in microsecond that will be set for the timer.
+*           Possible value depend of the clock speed.
+* @param    time_on_us is the time that the PWM will be HIGH in microsecond.
+*
+* @return   -1 the channel number is not supported, -2 if timer_A is unknown,
+*           -3 if the period is too high, else 0.
+*
+* @note     None.
+*
+*******************************************************************************/
+int timer_A_pwm(timer_A_t * this, uint8_t channel, uint32_t period_us, uint32_t time_on_us)
+{
+
+    if(channel == 0 || channel >= 5)
+    {
+        return -1;
+    }
+    this->pwm_channel = channel;
+    if(timer_A_up_mode(this, period_us) == -1)
+    {
+        return -3;
+    }
+    timer_A_compare_mode(this, channel);
+    timer_A_pwm_time_on(this, time_on_us);
+    return timer_A_set_output_mode(this, channel, TIMER_A_OUT_RESET_SET);
+}
 
 /*******************************   INTERRUPT    *******************************/
 void TA0_0_IRQHandler(void)
