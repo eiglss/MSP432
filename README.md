@@ -36,7 +36,7 @@ and then to run, execute:
 or `c`
 
 ---
-*Note that file versioned `0` haven't been fully tested.*
+*Note that file versioned `0.*` hasn't been fully tested.*
 
 ---
 Comming soon (in this order)
